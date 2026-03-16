@@ -27,7 +27,19 @@ const onClickBack = () => {
   }
 }
 
-const showSearch = ref(false)
+const showLogoutMenu = ref(false)
+const logoutMenuRef = ref<HTMLElement | null>(null)
+
+// @ts-ignore
+import { onClickOutside } from '@vueuse/core'
+onClickOutside(logoutMenuRef, () => {
+  showLogoutMenu.value = false
+})
+
+const handleLogout = async () => {
+  showLogoutMenu.value = false
+  await logout()
+}
 </script>
 
 <template>
@@ -40,43 +52,34 @@ const showSearch = ref(false)
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
       </button>
-      <!-- User Avatar (Mobile only) -->
-      <UiAvatar
-        v-else-if="isAuthenticated && user"
-        :src="user.avatar"
-        :alt="user.username"
-        size="sm"
-        class="mobile-avatar"
-        @click="logout"
-        title="Logout"
-      />
+
+      <!-- User Avatar Section (Mobile only) -->
+      <div v-else-if="isAuthenticated && user" class="mobile-avatar-wrapper">
+        <UiAvatar
+          :src="user.avatar"
+          :alt="user.username"
+          size="sm"
+          class="mobile-avatar"
+          @click="showLogoutMenu = !showLogoutMenu"
+          title="Account"
+        />
+
+        <!-- Logout Menu Dropdown -->
+        <Transition name="slide-up">
+          <div v-if="showLogoutMenu" class="logout-dropdown" ref="logoutMenuRef">
+            <button class="logout-btn" @click="handleLogout">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout @{{ user.username }}
+            </button>
+          </div>
+        </Transition>
+      </div>
     </div>
 
     <!-- Title -->
-    <h1 v-if="!showSearch" class="title">{{ title }}</h1>
-
-    <!-- Search Bar (Integrated) -->
-    <div v-else class="navbar-search">
-      <SearchInput compact @search="showSearch = false" />
-    </div>
+    <h1 class="title">{{ title }}</h1>
 
     <div class="right">
-      <button 
-        v-if="!showSearch" 
-        class="icon-btn search-toggle" 
-        @click="showSearch = true"
-        aria-label="Search"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      </button>
-      <button 
-        v-else 
-        class="icon-btn close-search" 
-        @click="showSearch = false"
-        aria-label="Close search"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
       <slot name="actions" />
     </div>
   </header>
@@ -137,12 +140,47 @@ const showSearch = ref(false)
   }
 }
 
-.mobile-avatar {
+.mobile-avatar-wrapper {
+  position: relative;
   display: none;
-  cursor: pointer;
   
   @include max-sm {
-    display: inline-block;
+    display: block;
+  }
+}
+
+.mobile-avatar {
+  cursor: pointer;
+}
+
+.logout-dropdown {
+  position: absolute;
+  top: calc(100% + $space-2);
+  left: 0;
+  background-color: $color-bg;
+  border: 1px solid $color-border-soft;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  padding: $space-2;
+  z-index: $z-dropdown;
+  min-width: 180px;
+
+  .logout-btn {
+    @include flex-center;
+    justify-content: flex-start;
+    gap: $space-2;
+    width: 100%;
+    padding: $space-2 $space-3;
+    border-radius: $radius-md;
+    color: $color-text;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-xs;
+    @include hover-transition(background-color);
+
+    &:hover {
+      background-color: rgba($color-danger, 0.1);
+      color: $color-danger;
+    }
   }
 }
 
