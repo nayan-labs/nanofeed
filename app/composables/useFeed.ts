@@ -17,20 +17,26 @@ export const useFeed = () => {
     watch: [page],
   })
 
-  // Watch for new data and append it
-  watch(data, (newData: any) => {
-    if (!newData?.success) return
-    
-    const newPosts = newData?.data?.posts ?? []
-    if (page.value === 1) {
-      posts.value = newPosts
-    } else if (newPosts.length > 0) {
-      // Functional deduplication based on ID
-      const existingIds = new Set(posts.value.map(p => p.id))
-      const filteredNewPosts = newPosts.filter((p: any) => !existingIds.has(p.id))
-      posts.value = [...posts.value, ...filteredNewPosts]
-    }
-  }, { immediate: true })
+  // Watch for new data and handle pagination properly
+  watch(
+    () => data.value,
+    (newData: any) => {
+      if (!newData?.success) return
+      
+      const newPosts = newData?.data?.posts ?? []
+      
+      // Reset posts array when returning to page 1 (refresh)
+      if (page.value === 1) {
+        posts.value = newPosts
+      } else if (newPosts.length > 0) {
+        // Functional deduplication based on ID for subsequent pages
+        const existingIds = new Set(posts.value.map(p => p.id))
+        const filteredNewPosts = newPosts.filter((p: any) => !existingIds.has(p.id))
+        posts.value = [...posts.value, ...filteredNewPosts]
+      }
+    },
+    { immediate: true, deep: false }
+  )
 
   const feed = computed<PaginatedPosts | null>(() => {
     const d = data.value as unknown as { data?: PaginatedPosts } | null
@@ -48,7 +54,10 @@ export const useFeed = () => {
   }
 
   const refresh = async () => {
+    // Clear posts before resetting to page 1 to ensure clean state
+    posts.value = []
     page.value = 1
+    // Force API refetch with new query params
     await fetchRefresh()
   }
 
