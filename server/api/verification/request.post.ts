@@ -11,6 +11,7 @@
 
 import prisma from '../../db/prisma'
 import { successResponse, errorResponse, HTTP } from '../../utils/responses'
+import { createNotification } from '../../services/notificationService'
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session
@@ -106,6 +107,12 @@ export default defineEventHandler(async (event) => {
         reason,
       },
     })
+
+    await createNotification({
+      userId: user.id,
+      type: 'VERIFICATION_UPDATE',
+      message: 'Your verification request has been received and is pending review.',
+    }).catch(e => console.error(e))
 
     setResponseStatus(event, HTTP.CREATED)
     return successResponse(request)

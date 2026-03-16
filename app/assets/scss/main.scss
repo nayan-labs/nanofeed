@@ -54,11 +54,12 @@ a {
   }
 }
 
-// ── Hashtag Inline Styling ──────────────────────────────────────
-.hashtag {
+// ── Hashtag & Mention Inline Styling ───────────────────────────
+.hashtag, .mention {
   color: $color-accent;
   font-weight: $font-weight-medium;
   cursor: pointer;
+  text-decoration: none;
 
   &:hover {
     text-decoration: underline;

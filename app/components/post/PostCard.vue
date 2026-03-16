@@ -7,7 +7,7 @@ import UiAvatar from '../ui/Avatar.vue'
 import UiBadge from '../ui/Badge.vue'
 import PostActions from './PostActions.vue'
 import type { PostWithAuthor } from '#shared/types/post'
-import { renderContentWithHashtags } from '../../utils/hashtagParser'
+import { renderContent } from '../../utils/hashtagParser'
 import { useTimeAgo } from '@vueuse/core'
 
 const props = defineProps<{
@@ -77,7 +77,7 @@ const navigateToProfile = () => {
       <!-- Body / Content -->
       <div 
         class="post-content" 
-        v-html="renderContentWithHashtags(post.content)"
+        v-html="renderContent(post.content)"
       ></div>
 
       <!-- Footer / Actions -->
@@ -172,16 +172,6 @@ const navigateToProfile = () => {
   word-wrap: break-word;
   white-space: pre-wrap; // Preserve newlines from text area
   
-  // The .hashtag class is defined globally in main.scss, 
-  // but we can ensure it's styled here too
-  .hashtag {
-    color: $color-accent;
-    cursor: pointer;
-    text-decoration: none;
-    
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+  // The .hashtag and .mention classes are defined globally in main.scss
 }
 </style>

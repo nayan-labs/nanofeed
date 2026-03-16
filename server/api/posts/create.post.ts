@@ -10,9 +10,11 @@
  * Requires authentication.
  */
 
+import { defineEventHandler, readBody, createError, setResponseStatus } from 'h3'
 import prisma from '../../db/prisma'
 import { successResponse, errorResponse, HTTP } from '../../utils/responses'
 import { parseHashtags } from '../../utils/parseHashtags'
+import { createNotification } from '../../services/notificationService'
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session
@@ -100,8 +102,45 @@ export default defineEventHandler(async (event) => {
             reactions: true,
           },
         },
+        parent: { select: { authorId: true } }
       },
     })
+    
+    // Asynchronous notification triggers
+    Promise.resolve().then(async () => {
+      // 1. Mentions
+      const mentionRegex = /@(\w+)/g;
+      const mentionedUsernames = Array.from(content.matchAll(mentionRegex), (match: any[]) => match[1]);
+      
+      const uniqueUsernames = [...new Set(mentionedUsernames)];
+      if (uniqueUsernames.length > 0) {
+        const mentionedUsers = await prisma.user.findMany({
+          where: { username: { in: uniqueUsernames } },
+          select: { id: true, username: true }
+        });
+        
+        for (const u of mentionedUsers) {
+          await createNotification({
+            userId: u.id,
+            type: 'MENTION',
+            message: `@${author.username} mentioned you in a post.`,
+            postId: post.id,
+            senderId: author.id
+          });
+        }
+      }
+
+      // 2. Replies
+      if (post.parent && post.parent.authorId !== author.id) {
+        await createNotification({
+          userId: post.parent.authorId,
+          type: 'REPLY',
+          message: `@${author.username} replied to your post.`,
+          postId: post.id,
+          senderId: author.id
+        });
+      }
+    }).catch((err) => console.error("Notification error:", err))
 
     setResponseStatus(event, HTTP.CREATED)
     return successResponse(post)

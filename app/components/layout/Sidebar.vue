@@ -8,11 +8,20 @@ import { onClickOutside } from '@vueuse/core'
 import UiButton from '../ui/Button.vue'
 import UiAvatar from '../ui/Avatar.vue'
 import SearchInput from '../ui/SearchInput.vue'
+import { useNotifications } from '../../composables/useNotifications'
 
 const { user, isAuthenticated, logout, isOwner } = useNanoAuth() as any
 const router = useRouter()
 const showLogoutMenu = ref(false)
 const logoutMenuRef = ref<HTMLElement | null>(null)
+
+const { unreadCount, fetchUnreadCount } = useNotifications()
+
+onMounted(() => {
+  if (isAuthenticated.value) {
+    fetchUnreadCount()
+  }
+})
 
 onClickOutside(logoutMenuRef, () => {
   showLogoutMenu.value = false
@@ -32,11 +41,12 @@ const onClickBack = () => {
 }
 
 const navLinks = computed(() => {
-  const links = [
+  const links: Array<{ name: string; path: string; icon: string; badge?: number }> = [
     { name: 'Home', path: '/', icon: 'home' },
   ]
 
   if (isAuthenticated.value) {
+    links.push({ name: 'Notifications', path: '/notifications', icon: 'bell', badge: unreadCount.value })
     links.push({ name: 'Profile', path: `/profile/${user.value?.username}`, icon: 'user' })
     links.push({ name: 'Settings', path: '/settings', icon: 'settings' })
   }
@@ -87,8 +97,12 @@ const onClickPost = () => {
             <svg v-else-if="link.icon === 'settings'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <!-- Dashboard -->
             <svg v-else-if="link.icon === 'dashboard'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            <!-- Bell (Notifications) -->
+            <svg v-else-if="link.icon === 'bell'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            
+            <span v-if="link.badge && link.badge > 0" class="badge-dot"></span>
           </div>
-          <span class="label">{{ link.name }}</span>
+          <span class="label">{{ link.name }} <span v-if="link.badge && link.badge > 0" class="badge-count">{{ link.badge > 99 ? '99+' : link.badge }}</span></span>
         </NuxtLink>
       </nav>
 
@@ -207,6 +221,28 @@ const onClickPost = () => {
 
   .icon-wrapper {
     @include flex-center;
+    position: relative;
+    
+    .badge-dot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 10px;
+      height: 10px;
+      background-color: $color-accent;
+      border-radius: 50%;
+      border: 2px solid $color-bg;
+    }
+  }
+
+  .badge-count {
+    margin-left: $space-2;
+    background-color: $color-accent;
+    color: white;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    padding: 2px 6px;
+    border-radius: $radius-full;
   }
 }
 

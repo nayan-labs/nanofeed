@@ -37,6 +37,7 @@ Create a `.env` file in the root directory by copying `.env.example`. You must c
 - [x] Owner Dashboard for User Management and Content Moderation.
 - [x] Account Restriction System with Global Publicity Banners.
 - [x] Terms of Service and Privacy Policy Pages.
+- [x] Comprehensive Notification System (Mentions, Replies, Reactions).
 - [ ] Direct Messaging System between Verified Users.
 - [ ] Advanced Content Recommendation Engine.
 - [ ] Multi-Organization Feed Support.

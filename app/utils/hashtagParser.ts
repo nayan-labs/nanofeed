@@ -16,13 +16,9 @@ export function extractHashtags(content: string): string[] {
 }
 
 /**
- * Convert raw post content into HTML with clickable hashtag links.
- * Hashtags become anchor tags linking to /hashtags/:tag.
- *
- * ⚠️ Use v-html with this output only after sanitizing content
- * (posts are text-only, so XSS is minimal, but avoid trusting arbitrary HTML)
+ * convert raw post content into HTML with clickable hashtag and mention links.
  */
-export function renderContentWithHashtags(content: string): string {
+export function renderContent(content: string): string {
   // Escape HTML to prevent XSS
   const escaped = content
     .replace(/&/g, '&amp;')
@@ -31,8 +27,20 @@ export function renderContentWithHashtags(content: string): string {
     .replace(/"/g, '&quot;')
 
   // Replace hashtags with links
-  return escaped.replace(
+  let result = escaped.replace(
     /#([a-zA-Z0-9_]+)/g,
     '<a href="/hashtags/$1" class="hashtag">#$1</a>'
   )
+
+  // Replace mentions with links
+  result = result.replace(
+    /@(\w+)/g,
+    '<a href="/profile/$1" class="mention">@$1</a>'
+  )
+
+  return result
 }
+
+// Keep the old name as an alias for compatibility if needed, but we'll update PostCard
+export const renderContentWithHashtags = renderContent
+

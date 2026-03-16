@@ -4,16 +4,25 @@
 -->
 <script setup lang="ts">
 import UiAvatar from '../ui/Avatar.vue'
+import { useNotifications } from '../../composables/useNotifications'
 
 const { user, isAuthenticated, isOwner } = useNanoAuth()
 
+interface NavLink {
+  name: string
+  path: string
+  icon: string
+  badge?: number
+}
+
 const navLinks = computed(() => {
-  const links = [
+  const links: NavLink[] = [
     { name: 'Home', path: '/', icon: 'home' },
   ]
 
   if (isAuthenticated.value) {
     links.push({ name: 'Search', path: '/search', icon: 'search' })
+    links.push({ name: 'Notifications', path: '/notifications', icon: 'bell', badge: unreadCount.value })
     links.push({ name: 'Profile', path: `/profile/${user.value?.username}`, icon: 'user' })
   }
 
@@ -24,6 +33,13 @@ const navLinks = computed(() => {
   return links
 })
 const { isComposerOpen, openComposer } = useCompose()
+const { unreadCount, fetchUnreadCount } = useNotifications()
+
+onMounted(() => {
+  if (isAuthenticated.value) {
+    fetchUnreadCount()
+  }
+})
 </script>
 
 <template>
@@ -41,6 +57,11 @@ const { isComposerOpen, openComposer } = useCompose()
       <svg v-else-if="link.icon === 'user'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <!-- Search -->
       <svg v-else-if="link.icon === 'search'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <!-- Notifications -->
+      <div v-else-if="link.icon === 'bell'" class="icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span v-if="link.badge && link.badge > 0" class="badge-dot"></span>
+      </div>
       <!-- Dashboard -->
       <svg v-else-if="link.icon === 'dashboard'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
     </NuxtLink>
@@ -99,6 +120,22 @@ const { isComposerOpen, openComposer } = useCompose()
 
   &:active {
     background-color: $color-surface-2;
+  }
+
+  .icon-wrapper {
+    position: relative;
+    @include flex-center;
+    
+    .badge-dot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 10px;
+      height: 10px;
+      background-color: $color-accent;
+      border-radius: 50%;
+      border: 2px solid $color-bg;
+    }
   }
 }
 

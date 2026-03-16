@@ -9,6 +9,7 @@
 
 import prisma from '../../db/prisma'
 import { successResponse, errorResponse, HTTP } from '../../utils/responses'
+import { createNotification } from '../../services/notificationService'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ requestId?: string }>(event)
@@ -36,6 +37,12 @@ export default defineEventHandler(async (event) => {
       where: { id: requestId },
       data: { status: 'REJECTED' },
     })
+
+    await createNotification({
+      userId: request.userId,
+      type: 'VERIFICATION_UPDATE',
+      message: 'Your verification request has been rejected after review.',
+    }).catch(e => console.error(e))
 
     return successResponse(updated)
   } catch (error: unknown) {

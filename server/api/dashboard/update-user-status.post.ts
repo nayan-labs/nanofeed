@@ -9,6 +9,7 @@
 
 import prisma from '../../db/prisma'
 import { successResponse, errorResponse, HTTP } from '../../utils/responses'
+import { createNotification } from '../../services/notificationService'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ 
@@ -54,6 +55,31 @@ export default defineEventHandler(async (event) => {
         restrictionNote: true
       } as any
     })
+    
+    // Asynchronous notification triggers
+    Promise.resolve().then(async () => {
+       if (isRevoking) {
+         await createNotification({
+           userId: userId,
+           type: 'VERIFICATION_UPDATE',
+           message: 'Your verified badge has been removed.',
+         });
+       }
+
+       if (body.isRestricted === true && (user as any).isRestricted !== true) {
+         await createNotification({
+           userId: userId,
+           type: 'ACCOUNT_STATUS',
+           message: `Your account has been restricted. Reason: ${body.restrictionNote || 'Violations of terms of service.'}`,
+         });
+       } else if (body.isRestricted === false && (user as any).isRestricted === true) {
+         await createNotification({
+           userId: userId,
+           type: 'ACCOUNT_STATUS',
+           message: 'Your account restriction has been lifted.',
+         });
+       }
+    }).catch(e => console.error("Notification error:", e))
 
     return successResponse(updatedUser)
   } catch (error: unknown) {

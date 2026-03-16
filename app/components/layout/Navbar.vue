@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import UiAvatar from '../ui/Avatar.vue'
 import SearchInput from '../ui/SearchInput.vue'
+import { useRouter } from 'vue-router'
 
 interface Props {
   title?: string
@@ -18,6 +19,8 @@ withDefaults(defineProps<Props>(), {
 
 const { user, isAuthenticated, logout } = useNanoAuth()
 const router = useRouter()
+onMounted(() => {
+})
 
 const onClickBack = () => {
   if (import.meta.client && window.history.length > 1) {
@@ -133,10 +136,29 @@ const handleLogout = async () => {
   height: 36px;
   border-radius: 50%;
   color: $color-text;
+  position: relative;
   @include hover-transition(background-color);
 
   &:hover {
     background-color: $color-surface-2;
+  }
+  
+  &.notif-btn {
+    margin-left: auto;
+  }
+
+  .badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: $color-accent;
+    color: white;
+    font-size: 10px;
+    font-weight: $font-weight-bold;
+    padding: 2px 5px;
+    border-radius: $radius-full;
+    border: 2px solid $color-bg;
+    line-height: 1;
   }
 }
 

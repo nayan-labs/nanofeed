@@ -8,6 +8,7 @@
 
 import prisma from '../../../db/prisma'
 import { successResponse, errorResponse, HTTP } from '../../../utils/responses'
+import { createNotification } from '../../../services/notificationService'
 
 export default defineEventHandler(async (event) => {
   const session = event.context.session
@@ -64,6 +65,18 @@ export default defineEventHandler(async (event) => {
           postId: postId,
         },
       })
+      
+      const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } })
+      if (post && post.authorId !== user.id) {
+         await createNotification({
+           userId: post.authorId,
+           type: 'REACTION',
+           message: 'Reacted to your post.',
+           postId: postId,
+           senderId: user.id
+         });
+      }
+
       return successResponse({ reacted: true })
     }
   } catch (error: unknown) {
