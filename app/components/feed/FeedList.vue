@@ -28,7 +28,7 @@ const emit = defineEmits<{
     </div>
 
     <template v-else>
-      <TransitionGroup name="list" tag="div">
+      <TransitionGroup name="list" tag="div" class="feed-items-container">
         <FeedItem
           v-for="post in posts"
           :key="post.id"
@@ -45,6 +45,13 @@ const emit = defineEmits<{
   display: flex;
   flex-direction: column;
   width: 100%;
+}
+
+.feed-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  position: relative; // Contains absolute children during list-leave transitions
 }
 
 .feed-loading, .feed-empty {
