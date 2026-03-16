@@ -30,6 +30,17 @@ export default defineEventHandler(async (event) => {
   const skip = (page - 1) * pageSize
 
   try {
+    // Get current user if authenticated to check reactions
+    let currentUserId: string | null = null
+    const session = event.context.session
+    if (session?.user?.email) {
+      const userResult = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true }
+      })
+      currentUserId = userResult?.id ?? null
+    }
+
     // First verify the user exists
     const user = await prisma.user.findUnique({
       where: { username },
@@ -72,6 +83,10 @@ export default defineEventHandler(async (event) => {
             },
           },
           hashtags: { select: { tag: true } },
+          reactions: currentUserId ? {
+            where: { userId: currentUserId },
+            select: { userId: true }
+          } : false,
           _count: {
             select: {
               replies: true,
@@ -83,9 +98,16 @@ export default defineEventHandler(async (event) => {
       prisma.post.count({ where: { authorId: user.id, hidden: false, parentId: null } }),
     ])
 
+    // Map hasReacted status
+    const postsWithReactionStatus = posts.map(post => ({
+      ...post,
+      hasReacted: currentUserId ? (post as any).reactions.length > 0 : false,
+      reactions: undefined // Remove reactions array from response
+    }))
+
     return successResponse({
       user,
-      posts,
+      posts: postsWithReactionStatus,
       total,
       page,
       pageSize,
