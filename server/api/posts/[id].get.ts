@@ -13,6 +13,17 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // Get current user if authenticated to check reactions
+    let currentUserId: string | null = null
+    const session = event.context.session
+    if (session?.user?.email) {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true }
+      })
+      currentUserId = user?.id ?? null
+    }
+
     const post = await prisma.post.findUnique({
       where: { id: postId, hidden: false },
       include: {
@@ -32,6 +43,10 @@ export default defineEventHandler(async (event) => {
             reactions: true
           }
         },
+        reactions: currentUserId ? {
+          where: { userId: currentUserId },
+          select: { userId: true }
+        } : false,
         replies: {
           where: { hidden: false },
           include: {
@@ -50,7 +65,11 @@ export default defineEventHandler(async (event) => {
                 replies: true,
                 reactions: true
               }
-            }
+            },
+            reactions: currentUserId ? {
+              where: { userId: currentUserId },
+              select: { userId: true }
+            } : false
           },
           orderBy: { createdAt: 'desc' }
         }
@@ -64,7 +83,19 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return successResponse(post)
+    // Map hasReacted status
+    const postWithReactionStatus = {
+      ...post,
+      hasReacted: currentUserId ? (post as any).reactions.length > 0 : false,
+      reactions: undefined,
+      replies: post.replies.map(reply => ({
+        ...reply,
+        hasReacted: currentUserId ? (reply as any).reactions.length > 0 : false,
+        reactions: undefined
+      }))
+    }
+
+    return successResponse(postWithReactionStatus)
   } catch (error: unknown) {
     if (typeof error === 'object' && error !== null && 'statusCode' in error) throw error
     console.error(`[GET /api/posts/${postId}]`, error)
