@@ -44,6 +44,10 @@ Create a `.env` file in the root directory by copying `.env.example`. You must c
 - [ ] Enhanced Statistical Visualization for Owners.
 - [ ] More features will be added soon.
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
 ## License
 
 This project is licensed under the MIT License.
