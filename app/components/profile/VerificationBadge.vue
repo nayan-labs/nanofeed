@@ -8,13 +8,14 @@ import UiBadge from '../ui/Badge.vue'
 defineProps<{
   isOwner?: boolean
   isVerified?: boolean
+  iconOnly?: boolean
 }>()
 </script>
 
 <template>
   <div class="nf-verification-badge">
-    <UiBadge v-if="isOwner" variant="owner" text="Project Owner" />
-    <UiBadge v-else-if="isVerified" variant="verified" text="Verified Developer" />
+    <UiBadge v-if="isOwner" variant="owner" text="Project Owner" :iconOnly="iconOnly" />
+    <UiBadge v-else-if="isVerified" variant="verified" text="Verified Developer" :iconOnly="iconOnly" />
   </div>
 </template>
 

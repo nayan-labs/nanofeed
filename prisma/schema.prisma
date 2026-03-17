@@ -136,12 +136,21 @@ model Post {
   parent    Post?    @relation("PostReplies", fields: [parentId], references: [id])
   replies   Post[]    @relation("PostReplies")
 
+  // Resposts
+  repostOfId String?  @map("repost_of_id")
+  repostOf   Post?    @relation("PostReposts", fields: [repostOfId], references: [id])
+  reposts    Post[]    @relation("PostReposts")
+
   // Relations
   hashtags  Hashtag[]  @relation("PostHashtags")
   reports   Report[]
   reactions Reaction[]
   notifications Notification[]
 
+  @@index([authorId])
+  @@index([parentId])
+  @@index([repostOfId])
+  @@index([createdAt(sort: Desc)])
   @@map("posts")
 }
 

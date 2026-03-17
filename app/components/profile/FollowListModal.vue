@@ -94,6 +94,7 @@ const handleFollowToggle = async (user: PublicUser) => {
                       v-if="user.verified || user.role === 'OWNER'"
                       :isVerified="user.verified" 
                       :isOwner="user.role === 'OWNER'" 
+                      iconOnly
                     />
                   </div>
                   <span class="username">@{{ user.username }}</span>

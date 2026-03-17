@@ -37,10 +37,46 @@ export default defineEventHandler(async (event) => {
             role: true
           }
         },
+        parent: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                verified: true,
+                role: true
+              }
+            }
+          }
+        },
+        repostOf: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                verified: true,
+                role: true
+              }
+            },
+            _count: {
+              select: {
+                replies: true,
+                reactions: true,
+                reposts: true
+              }
+            }
+          }
+        },
         _count: {
           select: {
             replies: true,
-            reactions: true
+            reactions: true,
+            reposts: true
           }
         },
         reactions: currentUserId ? {
@@ -60,10 +96,25 @@ export default defineEventHandler(async (event) => {
                 role: true
               }
             },
+            repostOf: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                    verified: true,
+                    role: true
+                  }
+                }
+              }
+            },
             _count: {
               select: {
                 replies: true,
-                reactions: true
+                reactions: true,
+                reposts: true
               }
             },
             reactions: currentUserId ? {

@@ -7,6 +7,7 @@ import Navbar from '../components/layout/Navbar.vue'
 import PostComposer from '../components/post/PostComposer.vue'
 import FeedList from '../components/feed/FeedList.vue'
 import FeedPagination from '../components/feed/FeedPagination.vue'
+import HomeTabs from '../components/feed/HomeTabs.vue'
 
 definePageMeta({
   title: 'Home',
@@ -14,7 +15,7 @@ definePageMeta({
 })
 
 const { user } = useNanoAuth()
-const { posts, hasMore, isLoading, refresh, nextPage } = useFeed()
+const { posts, hasMore, isLoading, refresh, nextPage, filter } = useFeed()
 
 // Soft refresh feed without full page reload
 const refreshing = ref(false)
@@ -49,6 +50,10 @@ const onPostDeleted = async () => {
       </template>
     </Navbar>
 
+    <HomeTabs 
+      v-model:activeTab="filter" 
+    />
+
     <div class="feed-container">
       <div class="feed-header">
         <div class="welcome-box">
@@ -63,7 +68,7 @@ const onPostDeleted = async () => {
         <FeedList 
           :posts="posts" 
           :loading="isLoading" 
-          emptyMessage="No posts yet. Be the first to share something!"
+          :emptyMessage="filter === 'recommended' ? 'No posts yet. Be the first to share something!' : 'Follow more people to see their posts here!'"
           @deleted="onPostDeleted"
         />
 
@@ -103,6 +108,7 @@ const onPostDeleted = async () => {
       margin-bottom: $space-1;
       background: linear-gradient(to right, $color-text, $color-accent);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     

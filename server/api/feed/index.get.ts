@@ -14,15 +14,15 @@ import prisma from '../../db/prisma'
 import { successResponse, errorResponse, HTTP } from '../../utils/responses'
 
 export default defineEventHandler(async (event) => {
+  // Parse and validate params
   const query = getQuery(event)
-
-  // Parse and validate pagination params
   const page = Math.max(1, Number(query.page) || 1)
   const pageSize = Math.min(50, Math.max(1, Number(query.pageSize) || 20))
   const skip = (page - 1) * pageSize
+  const filter = String(query.filter ?? 'recommended')
 
   try {
-    // Get current user if authenticated to check reactions
+    // Get current user if authenticated
     let currentUserId: string | null = null
     const session = event.context.session
     if (session?.user?.email) {
@@ -33,10 +33,32 @@ export default defineEventHandler(async (event) => {
       currentUserId = user?.id ?? null
     }
 
-    // Fetch posts and total count in parallel for efficiency
+    // Build the query filter
+    const where: any = { hidden: false }
+
+    if (filter === 'following') {
+      if (!currentUserId) {
+        throw createError({
+          statusCode: HTTP.UNAUTHORIZED,
+          data: errorResponse('You must be logged in to view your following feed'),
+        })
+      }
+
+      // Get the IDs of users the current user follows
+      const following = await prisma.follow.findMany({
+        where: { followerId: currentUserId },
+        select: { followingId: true }
+      })
+      const followingIds = following.map(f => f.followingId)
+      
+      // Inclusion logic: show only from followed users
+      where.authorId = { in: followingIds }
+    }
+
+    // Fetch posts and total count in parallel
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
-        where: { hidden: false },
+        where,
         skip,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
@@ -51,6 +73,41 @@ export default defineEventHandler(async (event) => {
               verified: true,
             },
           },
+          parent: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                  role: true,
+                  verified: true,
+                },
+              },
+            },
+          },
+          repostOf: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                  role: true,
+                  verified: true,
+                },
+              },
+              _count: {
+                select: {
+                  replies: true,
+                  reactions: true,
+                  reposts: true,
+                }
+              }
+            },
+          },
           hashtags: {
             select: { tag: true },
           },
@@ -62,11 +119,12 @@ export default defineEventHandler(async (event) => {
             select: {
               replies: true,
               reactions: true,
+              reposts: true,
             },
           },
         },
       }),
-      prisma.post.count({ where: { hidden: false } }),
+      prisma.post.count({ where }),
     ])
 
     // Map hasReacted status

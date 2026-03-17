@@ -8,17 +8,25 @@
 import type { PaginatedPosts } from '#shared/types/post'
 
 export const useFeed = () => {
+  const filter = useState<'recommended' | 'following'>('feed-filter', () => 'recommended')
   const page = useState<number>('feed-page', () => 1)
   const pageSize = useState<number>('feed-page-size', () => 20)
   const posts = useState<any[]>('feed-posts', () => [])
 
   const { data, status, refresh: fetchRefresh, error } = useFetch('/api/feed', {
-    query: computed(() => ({ page: page.value, pageSize: pageSize.value })),
-    watch: [page],
-    // lazy: skip immediate client re-fetch when SSR already delivered the data.
-    // This prevents a hydration flash where posts disappear then reappear, which
-    // was triggering the broken TransitionGroup position:absolute layout bug.
+    query: computed(() => ({ 
+      page: page.value, 
+      pageSize: pageSize.value,
+      filter: filter.value 
+    })),
+    watch: [page, filter],
     lazy: true,
+  })
+
+  // Reset feed when filter changes
+  watch(filter, () => {
+    posts.value = []
+    page.value = 1
   })
 
   // Watch for new data and handle pagination properly
@@ -29,11 +37,11 @@ export const useFeed = () => {
       
       const newPosts = newData?.data?.posts ?? []
       
-      // Reset posts array when returning to page 1 (refresh)
+      // Reset posts array when returning to page 1
       if (page.value === 1) {
         posts.value = newPosts
       } else if (newPosts.length > 0) {
-        // Functional deduplication based on ID for subsequent pages
+        // Deduplication
         const existingIds = new Set(posts.value.map(p => p.id))
         const filteredNewPosts = newPosts.filter((p: any) => !existingIds.has(p.id))
         posts.value = [...posts.value, ...filteredNewPosts]
@@ -49,7 +57,7 @@ export const useFeed = () => {
 
   const hasMore = computed(() => feed.value?.hasMore ?? false)
   const total = computed(() => feed.value?.total ?? 0)
-  const isLoading = computed(() => status.value === 'pending')
+  const isLoading = computed(() => status.value === 'pending' || status.value === 'idle')
 
   const nextPage = () => {
     if (hasMore.value && !isLoading.value) {
@@ -58,10 +66,8 @@ export const useFeed = () => {
   }
 
   const refresh = async () => {
-    // Clear posts before resetting to page 1 to ensure clean state
     posts.value = []
     page.value = 1
-    // Force API refetch with new query params
     await fetchRefresh()
   }
 
@@ -69,6 +75,7 @@ export const useFeed = () => {
     posts,
     feed,
     page,
+    filter,
     pageSize,
     hasMore,
     total,

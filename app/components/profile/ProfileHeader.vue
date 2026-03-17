@@ -15,7 +15,8 @@ const props = defineProps<{
   postCount?: number
 }>()
 
-const { user: currentUser } = useNanoAuth()
+const route = useRoute()
+const { user: currentUser, isAuthenticated } = useNanoAuth()
 const isSelf = computed(() => currentUser.value?.id === props.profileUser.id)
 
 const joinedDate = computed(() => {
@@ -41,8 +42,11 @@ const stats = computed(() => {
 
 const isProcessing = ref(false)
 const handleFollowToggle = async () => {
-  if (!currentUser.value) {
-    return navigateTo('/auth/login')
+  if (!isAuthenticated.value) {
+    return navigateTo({
+      path: '/auth/login',
+      query: { redirectTo: route.fullPath }
+    })
   }
   
   isProcessing.value = true
@@ -62,6 +66,12 @@ const followListType = ref<'followers' | 'following'>('followers')
 const followListTitle = computed(() => followListType.value === 'followers' ? 'Followers' : 'Following')
 
 const openFollowList = (type: 'followers' | 'following') => {
+  if (!isAuthenticated.value) {
+    return navigateTo({
+      path: '/auth/login',
+      query: { redirectTo: route.fullPath }
+    })
+  }
   followListType.value = type
   showFollowList.value = true
 }

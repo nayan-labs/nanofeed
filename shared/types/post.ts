@@ -13,6 +13,7 @@ export interface Post {
   createdAt: Date
   updatedAt: Date
   parentId?: string | null
+  repostOfId?: string | null
   hidden: boolean
 }
 
@@ -21,9 +22,12 @@ export interface PostWithAuthor extends Post {
   author: PublicUser
   hashtags: { tag: string }[]
   hasReacted?: boolean
+  parent?: PostWithAuthor
+  repostOf?: PostWithAuthor
   _count?: {
     replies: number
     reactions: number
+    reposts: number
   }
 }
 

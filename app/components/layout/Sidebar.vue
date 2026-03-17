@@ -138,7 +138,7 @@ const onClickPost = () => {
 
       <div v-else class="login-prompt">
         <NuxtLink to="/auth/login">
-          <UiButton block variant="secondary">Sign In</UiButton>
+          <UiButton block variant="primary">Sign In</UiButton>
         </NuxtLink>
       </div>
     </div>

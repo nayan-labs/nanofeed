@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
   const page = Math.max(1, Number(query.page) || 1)
   const pageSize = Math.min(50, Math.max(1, Number(query.pageSize) || 20))
   const skip = (page - 1) * pageSize
+  const tab = String(query.tab ?? 'posts')
 
   try {
     // Get current user if authenticated to check reactions
@@ -64,10 +65,22 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Determine query filter based on tab
+    const where: any = { 
+      authorId: user.id, 
+      hidden: false,
+    }
+
+    if (tab === 'replies') {
+      where.parentId = { not: null }
+    } else {
+      where.parentId = null
+    }
+
     // Fetch user's posts with pagination
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
-        where: { authorId: user.id, hidden: false, parentId: null }, // Only main posts on profile
+        where,
         skip,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
@@ -82,6 +95,40 @@ export default defineEventHandler(async (event) => {
               verified: true,
             },
           },
+          parent: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                  role: true,
+                  verified: true,
+                }
+              }
+            }
+          },
+          repostOf: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                  role: true,
+                  verified: true,
+                }
+              },
+              _count: {
+                select: {
+                  replies: true,
+                  reactions: true,
+                }
+              }
+            }
+          },
           hashtags: { select: { tag: true } },
           reactions: currentUserId ? {
             where: { userId: currentUserId },
@@ -91,11 +138,12 @@ export default defineEventHandler(async (event) => {
             select: {
               replies: true,
               reactions: true,
+              reposts: true,
             },
           },
         },
       }),
-      prisma.post.count({ where: { authorId: user.id, hidden: false, parentId: null } }),
+      prisma.post.count({ where }),
     ])
 
     // Map hasReacted status

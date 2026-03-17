@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import UiButton from '../ui/Button.vue'
 import UiModal from '../ui/Modal.vue'
+import ShareModal from './ShareModal.vue'
 import type { PostWithAuthor } from '#shared/types/post'
 import { REPORT_REASONS, REPORT_REASON_LABELS, type ReportReason } from '#shared/constants/reportReasons'
 
@@ -17,7 +18,7 @@ const emit = defineEmits<{
 }>()
 
 const { user, isAuthenticated, isOwner } = useNanoAuth()
-const { deletePost, isDeleting, reactToPost } = usePosts()
+const { deletePost, isDeleting, reactToPost, createPost, isCreating: isReplying, repost } = usePosts()
 const { submitReport, isSubmitting: isReporting } = useReports()
 
 const isAuthor = computed(() => user.value?.id === props.post.authorId)
@@ -28,10 +29,16 @@ const reactionCount = ref(props.post._count?.reactions || 0)
 const hasReacted = ref(props.post.hasReacted || false)
 const isReacting = ref(false)
 
+// Repost Logic
+const repostCount = ref(props.post._count?.reposts || 0)
+const hasReposted = ref(false) // Note: This would ideally come from the server like hasReacted
+const isReposting = ref(false)
+
 // Keep local state in sync with props
 watch(() => props.post.id, () => {
   hasReacted.value = props.post.hasReacted || false
   reactionCount.value = props.post._count?.reactions || 0
+  repostCount.value = props.post._count?.reposts || 0
 })
 
 const handleReact = async () => {
@@ -45,10 +52,20 @@ const handleReact = async () => {
   isReacting.value = false
 }
 
+const handleRepost = async () => {
+  if (!isAuthenticated.value || isReposting.value) return
+  isReposting.value = true
+  const res = await repost(props.post.id) as { reposted: boolean }
+  if (res) {
+    hasReposted.value = res.reposted
+    repostCount.value += res.reposted ? 1 : -1
+  }
+  isReposting.value = false
+}
+
 // Reply Logic
 const showReplyModal = ref(false)
 const replyContent = ref('')
-const { createPost, isCreating: isReplying } = usePosts()
 
 const handleReply = async () => {
   if (!replyContent.value.trim()) return
@@ -56,7 +73,6 @@ const handleReply = async () => {
   if (success) {
     showReplyModal.value = false
     replyContent.value = ''
-    // Optionally emit or refresh feed
   }
 }
 
@@ -95,6 +111,8 @@ const handleReport = async () => {
     }, 2000)
   }
 }
+
+const showShareModal = ref(false)
 </script>
 
 <template>
@@ -109,6 +127,18 @@ const handleReport = async () => {
       <span v-if="post._count?.replies" class="count">{{ post._count.replies }}</span>
     </button>
 
+    <!-- Repost Button -->
+    <button
+      class="action-btn repost-btn"
+      :class="{ 'is-active': hasReposted }"
+      @click="handleRepost"
+      :disabled="isReposting"
+      title="Repost"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-repeat"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+      <span v-if="repostCount" class="count">{{ repostCount }}</span>
+    </button>
+
     <!-- Love Button -->
     <button
       class="action-btn love-btn"
@@ -119,6 +149,15 @@ const handleReport = async () => {
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" :fill="hasReacted ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.505 4.04 3 5.5L12 21l7-7Z"/></svg>
       <span v-if="reactionCount" class="count">{{ reactionCount }}</span>
+    </button>
+
+    <!-- Share Button -->
+    <button
+      class="action-btn share-btn"
+      @click="showShareModal = true"
+      title="Share"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
     </button>
 
     <!-- Delete Button -->
@@ -202,6 +241,13 @@ const handleReport = async () => {
         <UiButton variant="primary" :disabled="!reportReason" :loading="isReporting" @click="handleReport">Submit Report</UiButton>
       </template>
     </UiModal>
+
+    <!-- External Share Modal -->
+    <ShareModal 
+      v-model="showShareModal" 
+      :postId="post.id" 
+      :postText="post.content"
+    />
   </div>
 </template>
 
@@ -226,6 +272,16 @@ const handleReport = async () => {
     background-color: rgba($color-accent, 0.1);
   }
 
+  &.repost-btn {
+    &:hover {
+      color: #00ba7c;
+      background-color: rgba(#00ba7c, 0.1);
+    }
+    &.is-active {
+      color: #00ba7c;
+    }
+  }
+
   &.love-btn {
     &.is-active {
       color: #f91880;
@@ -244,6 +300,11 @@ const handleReport = async () => {
   &.report-btn:hover {
     color: $color-warning;
     background-color: rgba($color-warning, 0.1);
+  }
+
+  &.share-btn:hover {
+    color: $color-accent;
+    background-color: rgba($color-accent, 0.1);
   }
 
   .count {

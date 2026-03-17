@@ -40,7 +40,7 @@ export const usePosts = () => {
    */
   const reactToPost = async (postId: string) => {
     try {
-      const response = await $fetch(`/api/posts/${postId}/react`, {
+      const response = await $fetch(`/api/posts/${postId}/react` as any, {
         method: 'POST'
       }) as { data: { reacted: boolean } }
       return response.data
@@ -59,7 +59,7 @@ export const usePosts = () => {
     error.value = null
 
     try {
-      await $fetch(`/api/posts/${postId}`, { method: 'DELETE' })
+      await $fetch(`/api/posts/${postId}` as any, { method: 'DELETE' })
       return true
     } catch (err: unknown) {
       const msg =
@@ -72,6 +72,21 @@ export const usePosts = () => {
     }
   }
 
+  /**
+   * Repost a post.
+   */
+  const repost = async (postId: string) => {
+    try {
+      const response = await $fetch(`/api/posts/${postId}/repost` as any, {
+        method: 'POST'
+      }) as { data: unknown }
+      return response.data
+    } catch (err: unknown) {
+      console.error('Failed to repost:', err)
+      return null
+    }
+  }
+
   return {
     isCreating,
     isDeleting,
@@ -79,5 +94,6 @@ export const usePosts = () => {
     createPost,
     deletePost,
     reactToPost,
+    repost,
   }
 }

@@ -54,6 +54,7 @@ $font-weight-normal:  400;
 $font-weight-medium:  500;
 $font-weight-semibold:600;
 $font-weight-bold:    700;
+$font-weight-black:   900;
 
 $line-height-base:    1.2;
 $line-height-relaxed: 1.6;
@@ -105,5 +106,6 @@ $shadow-glow: 0 0 20px rgba(29, 155, 240, 0.3);
 // ── Z-Index Scale ──────────────────────────────────────────────
 $z-dropdown:  100;
 $z-sticky:    200;
-$z-modal:     300;
-$z-toast:     400;
+$z-fixed:     500;
+$z-modal:     1000;
+$z-toast:     2000;
