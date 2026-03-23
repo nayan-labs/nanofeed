@@ -117,6 +117,20 @@ export default defineEventHandler(async (event) => {
                 reposts: true
               }
             },
+            parent: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                    verified: true,
+                    role: true
+                  }
+                }
+              }
+            },
             reactions: currentUserId ? {
               where: { userId: currentUserId },
               select: { userId: true }

@@ -60,6 +60,20 @@ export default defineEventHandler(async (event) => {
               verified: true,
             },
           },
+          parent: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                  role: true,
+                  verified: true,
+                }
+              }
+            }
+          },
           hashtags: { select: { tag: true } },
         },
       }),

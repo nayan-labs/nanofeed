@@ -102,7 +102,20 @@ export default defineEventHandler(async (event) => {
             reactions: true,
           },
         },
-        parent: { select: { authorId: true } }
+        parent: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                role: true,
+                verified: true,
+              }
+            }
+          }
+        }
       },
     })
     

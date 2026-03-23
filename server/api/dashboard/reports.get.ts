@@ -46,6 +46,13 @@ export default defineEventHandler(async (event) => {
               author: {
                 select: { id: true, username: true, displayName: true },
               },
+              parent: {
+                include: {
+                  author: {
+                    select: { id: true, username: true, displayName: true }
+                  }
+                }
+              }
             },
           },
           reportedUser: {
