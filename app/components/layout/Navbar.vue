@@ -92,7 +92,7 @@ const handleLogout = async () => {
 .nf-navbar {
   position: sticky;
   top: 0;
-  z-index: $z-sticky;
+  z-index: $z-fixed;
   height: 53px;
   padding: 0 $space-4;
   display: flex;
@@ -179,10 +179,10 @@ const handleLogout = async () => {
   position: absolute;
   top: calc(100% + $space-2);
   left: 0;
-  background-color: $color-bg;
-  border: 1px solid $color-border-soft;
+  background-color: $color-surface-2;
+  border: 1px solid $color-border;
   border-radius: $radius-xl;
-  box-shadow: $shadow-lg;
+  box-shadow: $shadow-xl;
   padding: $space-2;
   z-index: $z-dropdown;
   min-width: 180px;
