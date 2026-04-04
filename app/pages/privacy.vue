@@ -52,8 +52,12 @@ useSeoMeta({
       </section>
 
       <section class="legal-section">
-        <h2>5. Your Rights</h2>
-        <p>You have the right to access, update, or request the deletion of your personal data. You can manage your profile settings directly through the application.</p>
+        <h2>5. Your Rights & Account Lifecycle</h2>
+        <p>You have the right to access, update, deactivate, or request the deletion of your personal data through your application settings.</p>
+        <ul>
+          <li><strong>Deactivation</strong>: Instantly hides your profile and content from the public without deleting your data. Logging back in will securely and automatically restore your account.</li>
+          <li><strong>Account Deletion</strong>: Scheduling an account for deletion initiates a strict 30-day grace period. During these 30 days, your content is hidden, and you can cancel the deletion simply by logging back in. After the 30-day window expires, your account and all associated data are permanently and irreversibly purged from our servers.</li>
+        </ul>
       </section>
 
       <section class="legal-section">

@@ -68,15 +68,38 @@ export const authOptions: AuthConfig = {
       try {
         const existingUser = await prisma.user.findUnique({
           where: { githubId },
+          select: {
+            id: true,
+            role: true,
+            isActive: true,
+            deletionRequestedAt: true,
+          },
         })
 
         if (existingUser) {
+          // Build the update payload
+          const updateData: Record<string, unknown> = {
+            avatar: githubProfile.avatar_url,
+            role: githubId === ownerGithubId ? Role.OWNER : existingUser.role,
+          }
+
+          // ── Grace period: logging in cancels a pending deletion ──
+          // (Facebook/X style — login = "I changed my mind")
+          if (existingUser.deletionRequestedAt) {
+            updateData.deletionRequestedAt = null
+            console.log(`[Auth] Deletion cancelled for user ${githubProfile.login} — they logged in within grace period`)
+          }
+
+          // ── Deactivation: logging in reactivates the account ──
+          // (The ONLY way to reactivate — no in-app button)
+          if (!existingUser.isActive) {
+            updateData.isActive = true
+            console.log(`[Auth] Account reactivated for user ${githubProfile.login} — they logged back in`)
+          }
+
           await prisma.user.update({
             where: { githubId },
-            data: {
-              avatar: githubProfile.avatar_url,
-              role: githubId === ownerGithubId ? Role.OWNER : existingUser.role,
-            },
+            data: updateData,
           })
         } else {
           await prisma.user.create({

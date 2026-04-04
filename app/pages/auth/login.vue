@@ -6,7 +6,7 @@
 import UiButton from '../../components/ui/Button.vue'
 
 definePageMeta({
-  layout: 'blank', // No sidebar/nav
+  layout: 'blank',
   auth: {
     unauthenticatedOnly: true,
     navigateAuthenticatedTo: '/',
@@ -14,9 +14,23 @@ definePageMeta({
 })
 
 const { loginWithGithub, isLoading } = useNanoAuth()
+const route = useRoute()
 
 useSeoMeta({
   title: 'Sign In',
+})
+
+// ── Context banners based on query params ─────────────────────
+// ?deactivated=true  → user just deactivated
+// ?deleted=pending   → user just scheduled deletion
+// ?account=restored  → user logged back in after deactivation/deletion cancel
+type BannerType = 'deactivated' | 'deleted' | 'restored' | null
+
+const bannerType = computed<BannerType>(() => {
+  if (route.query.deactivated === 'true') return 'deactivated'
+  if (route.query.deleted === 'pending') return 'deleted'
+  if (route.query.account === 'restored') return 'restored'
+  return null
 })
 </script>
 
@@ -26,6 +40,31 @@ useSeoMeta({
       <!-- Logo -->
       <div class="logo">
         <span class="logo-text">Nano<span>Feed</span></span>
+      </div>
+
+      <!-- Context banners -->
+      <div v-if="bannerType === 'deactivated'" class="login-banner login-banner--info" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        <div>
+          <strong>Your account has been deactivated.</strong><br>
+          Your profile and posts are hidden. Log in below to restore your account instantly — no extra steps needed.
+        </div>
+      </div>
+
+      <div v-else-if="bannerType === 'deleted'" class="login-banner login-banner--warning" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>Your account is scheduled for deletion in 30 days.</strong><br>
+          Changed your mind? Log in before 30 days and the deletion will be cancelled automatically — no extra steps needed.
+        </div>
+      </div>
+
+      <div v-else-if="bannerType === 'restored'" class="login-banner login-banner--success" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div>
+          <strong>Welcome back!</strong><br>
+          Your account has been fully restored.
+        </div>
       </div>
 
       <div class="text-content">
@@ -71,6 +110,39 @@ useSeoMeta({
   align-items: center;
   gap: $space-8;
   text-align: center;
+}
+
+// ── Context banners ──────────────────────────────────────────────
+.login-banner {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+  padding: $space-4;
+  border-radius: $radius-md;
+  text-align: left;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+
+  svg { flex-shrink: 0; margin-top: 2px; }
+
+  &--info {
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+  }
+
+  &--warning {
+    background: rgba($color-warning, 0.1);
+    border: 1px solid rgba($color-warning, 0.3);
+    color: $color-warning;
+  }
+
+  &--success {
+    background: rgba($color-success, 0.1);
+    border: 1px solid rgba($color-success, 0.3);
+    color: $color-success;
+  }
 }
 
 .logo {

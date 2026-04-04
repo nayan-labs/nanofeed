@@ -9,7 +9,7 @@ import ProfileSettingsForm from '../components/settings/ProfileSettingsForm.vue'
 import { ref } from 'vue'
 
 definePageMeta({
-  middleware: 'auth', // Ensure user is logged in
+  middleware: 'auth',
 })
 
 const { user, isVerified, isOwner } = useNanoAuth()
@@ -206,6 +206,29 @@ const inCooldown = computed(() => cooldownDays.value > 0)
   display: flex;
   flex-direction: column;
   gap: $space-6;
+}
+
+.account-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-panel-header {
+  padding: $space-4;
+  border-bottom: 1px solid $color-border-soft;
+
+  .panel-title {
+    margin: 0 0 $space-1;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+  }
+
+  .panel-desc {
+    margin: 0;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.5;
+  }
 }
 
 .status-box {

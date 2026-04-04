@@ -77,6 +77,10 @@ model User {
   isRestricted Boolean   @default(false) @map("is_restricted")
   restrictionNote String? @db.Text @map("restriction_note")
 
+  // Account lifecycle — deactivation & soft-delete
+  isActive            Boolean   @default(true) @map("is_active")
+  deletionRequestedAt DateTime? @map("deletion_requested_at")
+
   // Timestamps
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

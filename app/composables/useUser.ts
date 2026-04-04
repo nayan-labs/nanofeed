@@ -6,7 +6,7 @@
  * and provides update functionality via /api/users/update.
  */
 
-import type { UpdateUserInput } from '#shared/types/user'
+import type { UpdateUserInput, User } from '#shared/types/user'
 
 export const useUser = () => {
   const { data, status, refresh, error } = useFetch('/api/users/me', {
@@ -14,7 +14,7 @@ export const useUser = () => {
     watch: false,
   })
 
-  const user = computed(() => (data.value as { data?: unknown })?.data ?? null)
+  const user = computed(() => (data.value as unknown as { data?: User })?.data ?? null)
   const isLoading = computed(() => status.value === 'pending')
 
   /**

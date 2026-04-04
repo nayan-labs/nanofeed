@@ -14,5 +14,11 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/purge-deleted-accounts",
+      "schedule": "0 3 * * *"
+    }
   ]
 }

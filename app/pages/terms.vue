@@ -46,12 +46,21 @@ useSeoMeta({
       </section>
 
       <section class="legal-section">
-        <h2>5. Termination</h2>
-        <p>We may suspend or terminate your account at any time, with or without notice, if we believe you have violated these terms. Restricted accounts will lose the ability to post and interact with the community.</p>
+        <h2>5. Account Lifecycle</h2>
+        <p>You have full control over the visibility and existence of your account through the application settings.</p>
+        <ul>
+          <li><strong>Deactivation</strong>: You may temporarily deactivate your account to hide your profile and content. You can reactivate your account anytime by logging back in.</li>
+          <li><strong>Deletion</strong>: Requesting account deletion starts a 30-day grace period, during which your account is deactivated and hidden. If you do not log in within 30 days, your account and all its data will be permanently deleted without the possibility of recovery.</li>
+        </ul>
       </section>
 
       <section class="legal-section">
-        <h2>6. Contact Us</h2>
+        <h2>6. Termination</h2>
+        <p>We may suspend or terminate your account at any time, with or without notice, if we believe you have violated these terms. Restricted accounts will lose the ability to post and interact with the community. Account deletion or deactivation cannot be used to circumvent a restriction.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>7. Contact Us</h2>
         <p>If you have any questions about these terms, please contact the project owner at: <a href="mailto:nayanchandradas@hotmail.com">nayanchandradas@hotmail.com</a></p>
       </section>
     </div>

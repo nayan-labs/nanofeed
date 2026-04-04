@@ -33,8 +33,11 @@ export default defineEventHandler(async (event) => {
       currentUserId = user?.id ?? null
     }
 
-    // Build the query filter
-    const where: any = { hidden: false }
+    // Build the query filter — exclude hidden posts and posts from deactivated accounts
+    const where: any = {
+      hidden: false,
+      author: { isActive: true },
+    }
 
     if (filter === 'following') {
       if (!currentUserId) {

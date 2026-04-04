@@ -6,6 +6,7 @@
 import UiInput from '../ui/Input.vue'
 import UiButton from '../ui/Button.vue'
 import AvatarUploader from './AvatarUploader.vue'
+import AccountDangerZone from './AccountDangerZone.vue'
 import { validateDisplayName, validateUsername, validateBio } from '../../utils/validation'
 import type { UpdateUserInput } from '#shared/types/user'
 import { USERNAME_MAX_LENGTH, BIO_MAX_LENGTH } from '../../utils/constants'
@@ -169,6 +170,18 @@ const onSubmit = async () => {
       </div>
 
     </form>
+
+    <div class="divider section-divider"></div>
+
+    <!-- Danger Zone (Account Lifecycle) -->
+    <div class="form-section danger-section">
+      <div class="danger-header">
+        <h3 class="section-title">Account Management</h3>
+        <p class="info-text">Manage your account status. These actions affect your visibility and access to NanoFeed.</p>
+      </div>
+      <AccountDangerZone />
+    </div>
+
   </div>
   <div v-else class="loading-state">
     <div class="spinner"></div>
@@ -247,6 +260,23 @@ const onSubmit = async () => {
 .submit-error {
   color: $color-danger;
   font-size: $font-size-sm;
+}
+
+.section-divider {
+  margin: $space-8 0 $space-6 0;
+}
+
+.danger-section {
+  .danger-header {
+    margin-bottom: $space-2;
+    padding: 0 $space-4;
+  }
+  
+  .info-text {
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+    margin: $space-1 0 0 0;
+  }
 }
 
 .loading-state {
