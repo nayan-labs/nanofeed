@@ -36,7 +36,10 @@ export default defineEventHandler(async (event) => {
     // Build the query filter — exclude hidden posts and posts from deactivated accounts
     const where: any = {
       hidden: false,
-      author: { isActive: true },
+      author: { 
+        isActive: true,
+        deletionRequestedAt: null
+      },
     }
 
     if (filter === 'following') {
@@ -74,6 +77,8 @@ export default defineEventHandler(async (event) => {
               avatar: true,
               role: true,
               verified: true,
+              isActive: true,
+              deletionRequestedAt: true,
             },
           },
           parent: {
@@ -86,6 +91,8 @@ export default defineEventHandler(async (event) => {
                   avatar: true,
                   role: true,
                   verified: true,
+                  isActive: true,
+                  deletionRequestedAt: true,
                 },
               },
             },
@@ -100,6 +107,8 @@ export default defineEventHandler(async (event) => {
                   avatar: true,
                   role: true,
                   verified: true,
+                  isActive: true,
+                  deletionRequestedAt: true,
                 },
               },
               _count: {

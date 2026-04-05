@@ -34,7 +34,9 @@ export default defineEventHandler(async (event) => {
             displayName: true,
             avatar: true,
             verified: true,
-            role: true
+            role: true,
+            isActive: true,
+            deletionRequestedAt: true,
           }
         },
         parent: {
@@ -46,7 +48,9 @@ export default defineEventHandler(async (event) => {
                 displayName: true,
                 avatar: true,
                 verified: true,
-                role: true
+                role: true,
+                isActive: true,
+                deletionRequestedAt: true,
               }
             }
           }
@@ -60,7 +64,9 @@ export default defineEventHandler(async (event) => {
                 displayName: true,
                 avatar: true,
                 verified: true,
-                role: true
+                role: true,
+                isActive: true,
+                deletionRequestedAt: true,
               }
             },
             _count: {
@@ -93,7 +99,9 @@ export default defineEventHandler(async (event) => {
                 displayName: true,
                 avatar: true,
                 verified: true,
-                role: true
+                role: true,
+                isActive: true,
+                deletionRequestedAt: true,
               }
             },
             repostOf: {
@@ -105,7 +113,9 @@ export default defineEventHandler(async (event) => {
                     displayName: true,
                     avatar: true,
                     verified: true,
-                    role: true
+                    role: true,
+                    isActive: true,
+                    deletionRequestedAt: true,
                   }
                 }
               }
@@ -126,7 +136,9 @@ export default defineEventHandler(async (event) => {
                     displayName: true,
                     avatar: true,
                     verified: true,
-                    role: true
+                    role: true,
+                    isActive: true,
+                    deletionRequestedAt: true,
                   }
                 }
               }

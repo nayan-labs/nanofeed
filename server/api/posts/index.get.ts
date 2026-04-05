@@ -93,6 +93,8 @@ export default defineEventHandler(async (event) => {
               avatar: true,
               role: true,
               verified: true,
+              isActive: true,
+              deletionRequestedAt: true,
             },
           },
           parent: {
@@ -105,6 +107,8 @@ export default defineEventHandler(async (event) => {
                   avatar: true,
                   role: true,
                   verified: true,
+                  isActive: true,
+                  deletionRequestedAt: true,
                 }
               }
             }
@@ -119,6 +123,8 @@ export default defineEventHandler(async (event) => {
                   avatar: true,
                   role: true,
                   verified: true,
+                  isActive: true,
+                  deletionRequestedAt: true,
                 }
               },
               _count: {

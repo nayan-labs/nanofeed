@@ -26,17 +26,21 @@
         </div>
         <div class="post-right" @click.stop="router.push(`/post/${post.parent.id}`)">
           <header class="post-header">
-            <span class="display-name">{{ post.parent.author.displayName }}</span>
+            <span class="display-name">{{ isUnavailable(post.parent?.author) ? 'User' : post.parent?.author.displayName }}</span>
             
             <!-- Badges for Parent -->
-            <UiBadge v-if="post.parent.author.role === 'OWNER'" variant="owner" iconOnly />
-            <UiBadge v-else-if="post.parent.author.verified" variant="verified" iconOnly />
+            <template v-if="!isUnavailable(post.parent?.author)">
+              <UiBadge v-if="post.parent?.author.role === 'OWNER'" variant="owner" iconOnly />
+              <UiBadge v-else-if="post.parent?.author.verified" variant="verified" iconOnly />
+            </template>
             
-            <span class="username">@{{ post.parent.author.username }}</span>
+            <span class="username">@{{ isUnavailable(post.parent?.author) ? 'user' : post.parent?.author.username }}</span>
             <span class="dot">·</span>
-            <span class="timestamp">{{ useTimeAgo(new Date(post.parent.createdAt)).value }}</span>
+            <span class="timestamp">{{ useTimeAgo(new Date(post.parent?.createdAt || Date.now())).value }}</span>
           </header>
-          <div class="post-content" v-html="renderContent(post.parent.content)"></div>
+          <div class="post-content">
+            {{ isUnavailable(post.parent?.author) ? 'This post is no longer available' : (post.parent?.content || '') }}
+          </div>
         </div>
       </div>
     </div>
@@ -48,8 +52,8 @@
         <div v-if="post.repostOfId && !isInsideRepost" class="repost-spacer"></div>
         
         <UiAvatar
-          :src="post.author.avatar"
-          :alt="post.author.username"
+          :src="isUnavailable(post.author) ? '' : post.author.avatar"
+          :alt="isUnavailable(post.author) ? 'User' : post.author.username"
           size="md"
           class="author-avatar"
         />
@@ -67,13 +71,15 @@
 
         <!-- Header -->
         <header class="post-header" @click.stop="navigateToProfile">
-          <span class="display-name">{{ post.author.displayName }}</span>
+          <span class="display-name">{{ isUnavailable(post.author) ? 'User' : post.author.displayName }}</span>
           
           <!-- Badges -->
-          <UiBadge v-if="post.author.role === 'OWNER'" variant="owner" iconOnly />
-          <UiBadge v-else-if="post.author.verified" variant="verified" iconOnly />
+          <template v-if="!isUnavailable(post.author)">
+            <UiBadge v-if="post.author.role === 'OWNER'" variant="owner" iconOnly />
+            <UiBadge v-else-if="post.author.verified" variant="verified" iconOnly />
+          </template>
           
-          <span class="username">@{{ post.author.username }}</span>
+          <span class="username">@{{ isUnavailable(post.author) ? 'user' : post.author.username }}</span>
           <span class="dot">·</span>
           <time :datetime="dateObj.toISOString()" :title="dateObj.toLocaleString()" class="timestamp">
             {{ shortTime }}
@@ -83,8 +89,8 @@
         <!-- Reply Indicator -->
         <div v-if="post.parentId && !isInsideRepost" class="reply-indicator">
           <span>Replying to </span>
-          <span class="reply-to" @click.stop="router.push(`/profile/${post.parent?.author.username || ''}`)">
-            @{{ post.parent?.author.username || '' }}
+          <span class="reply-to" @click.stop="!isUnavailable(post.parent?.author) && router.push(`/profile/${post.parent?.author.username || ''}`)">
+            @{{ isUnavailable(post.parent?.author) ? 'user' : (post.parent?.author.username || '') }}
           </span>
         </div>
 
@@ -92,8 +98,14 @@
         <div 
           v-if="!post.repostOf"
           class="post-content" 
-          v-html="renderContent(post.content)"
-        ></div>
+        >
+          <template v-if="isUnavailable(post.author)">
+            <span class="unavailable-text">This post is no longer available</span>
+          </template>
+          <template v-else>
+             <div v-html="renderContent(post.content)"></div>
+          </template>
+        </div>
 
         <!-- Reposted Content -->
         <div v-if="post.repostOf" class="reposted-content-wrapper">
@@ -146,12 +158,19 @@ const shortTime = computed(() => {
             .replace(' years ago', 'y')
 })
 
+const isUnavailable = (user?: any) => {
+  if (!user) return false
+  // Use explicit false/null checks to handle cases where the API didn't return these fields (undefined)
+  return user.isActive === false || (user.deletionRequestedAt !== undefined && user.deletionRequestedAt !== null)
+}
+
 const navigateToPost = () => {
-  if (props.isInsideRepost) return
+  if (props.isInsideRepost || isUnavailable(props.post.author)) return
   router.push(`/post/${props.post.id}`)
 }
 
 const navigateToProfile = () => {
+  if (isUnavailable(props.post.author)) return
   router.push(`/profile/${props.post.author.username}`)
 }
 </script>
@@ -369,6 +388,12 @@ const navigateToProfile = () => {
   
   // Preserve whitespace/newlines
   white-space: pre-wrap; 
+
+  .unavailable-text {
+    font-style: italic;
+    color: $color-text-muted;
+    opacity: 0.8;
+  }
 }
 
 .reposted-content-wrapper {

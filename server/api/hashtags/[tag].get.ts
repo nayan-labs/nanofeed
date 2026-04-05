@@ -38,11 +38,17 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    const where = { 
+      hashtags: { some: { tag } },
+      author: {
+        isActive: true,
+        deletionRequestedAt: null,
+      }
+    }
+
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
-        where: {
-          hashtags: { some: { tag } },
-        },
+        where,
         skip,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
@@ -55,6 +61,8 @@ export default defineEventHandler(async (event) => {
               avatar: true,
               role: true,
               verified: true,
+              isActive: true,
+              deletionRequestedAt: true,
             },
           },
           parent: {
@@ -67,6 +75,8 @@ export default defineEventHandler(async (event) => {
                   avatar: true,
                   role: true,
                   verified: true,
+                  isActive: true,
+                  deletionRequestedAt: true,
                 }
               }
             }
@@ -74,9 +84,7 @@ export default defineEventHandler(async (event) => {
           hashtags: { select: { tag: true } },
         },
       }),
-      prisma.post.count({
-        where: { hashtags: { some: { tag } } },
-      }),
+      prisma.post.count({ where }),
     ])
 
     return successResponse({

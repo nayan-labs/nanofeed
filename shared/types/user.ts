@@ -37,6 +37,8 @@ export interface PublicUser {
   isFollowing?: boolean
   isRestricted?: boolean
   restrictionNote?: string | null
+  isActive: boolean
+  deletionRequestedAt: Date | null
 }
 
 /** Payload for updating user profile via PATCH /api/users/update */

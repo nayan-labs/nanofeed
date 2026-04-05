@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
         isRestricted: true,
         restrictionNote: true,
         isActive: true,
+        deletionRequestedAt: true,
         createdAt: true,
         _count: {
           select: {
@@ -51,16 +52,16 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Deactivated accounts are hidden from public profile views
-    if (!user.isActive) {
+    // Deactivated or deleting accounts are hidden from public profile views
+    if (!user.isActive || user.deletionRequestedAt !== null) {
       throw createError({
-        statusCode: 410, // 410 Gone — account deliberately deactivated
-        data: errorResponse('This account has been deactivated'),
+        statusCode: 410, // 410 Gone — account deliberately deactivated or pending deletion
+        data: errorResponse('This account is no longer available'),
       })
     }
 
-    // Strip isActive from the public response
-    const { isActive: _, ...publicUser } = user
+    // Strip private status fields from the public response
+    const { isActive: _, deletionRequestedAt: __, ...publicUser } = user
 
     return successResponse(publicUser as PublicUser)
   } catch (error: unknown) {

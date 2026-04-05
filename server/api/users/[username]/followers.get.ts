@@ -18,7 +18,11 @@ export default defineEventHandler(async (event) => {
   try {
     const follows = await prisma.follow.findMany({
       where: {
-        following: { username }
+        following: { username },
+        follower: {
+          isActive: true,
+          deletionRequestedAt: null,
+        }
       },
       include: {
         follower: {
@@ -30,6 +34,8 @@ export default defineEventHandler(async (event) => {
             bio: true,
             role: true,
             verified: true,
+            isActive: true,
+            deletionRequestedAt: true,
             createdAt: true,
             _count: {
               select: {

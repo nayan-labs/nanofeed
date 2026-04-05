@@ -30,6 +30,8 @@ export default defineEventHandler(async (event) => {
             { username: { contains: q, mode: 'insensitive' } },
             { displayName: { contains: q, mode: 'insensitive' } },
           ],
+          isActive: true,
+          deletionRequestedAt: null,
         },
         take: 5,
         select: {
@@ -46,6 +48,10 @@ export default defineEventHandler(async (event) => {
       prisma.post.findMany({
         where: {
           content: { contains: q, mode: 'insensitive' },
+          author: {
+            isActive: true,
+            deletionRequestedAt: null,
+          }
         },
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -58,6 +64,8 @@ export default defineEventHandler(async (event) => {
               avatar: true,
               role: true,
               verified: true,
+              isActive: true,
+              deletionRequestedAt: true,
             },
           },
           parent: {
@@ -70,6 +78,8 @@ export default defineEventHandler(async (event) => {
                   avatar: true,
                   role: true,
                   verified: true,
+                  isActive: true,
+                  deletionRequestedAt: true,
                 }
               }
             }
