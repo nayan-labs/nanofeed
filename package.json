@@ -5,12 +5,12 @@
   "private": true,
   "license": "MIT",
   "author": {
-    "name": "nayan-labs",
-    "url": "https://github.com/nayan-labs"
+    "name": "nanofeed",
+    "url": "https://github.com/nanofeed"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nayan-labs/nanofeed"
+    "url": "https://github.com/nanofeed/nanofeed"
   },
   "scripts": {
     "build": "nuxt build",
