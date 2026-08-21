@@ -2,6 +2,8 @@
 
 NanoFeed is a minimal micro-social network specifically designed for developers. It focuses on text-based interactions, developer verification, and a clean, high-contrast user interface tailored for technical communities.
 
+[Try it](https://nanofeed.vercel.app)
+
 ## Getting Started
 
 ### Prerequisites
